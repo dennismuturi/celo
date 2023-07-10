@@ -10,8 +10,8 @@ let kit
 let contract
 let candidates= [];
 
-const MPContractAddress = "0x069A0Bb2670665ec490C1294864Bb8957253Cb38"
-const cUSDContractAddress = "0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1"
+const MPContractAddress = "0xB1818eEd468c2Ced12195582749efa40DE6A0cd0"
+const cUSDContractAddress = "0xB1818eEd468c2Ced12195582749efa40DE6A0cd0"
 
 async function approve(_price) {
   const cUSDContract = new kit.web3.eth.Contract(erc20Abi, cUSDContractAddress)
@@ -108,11 +108,13 @@ const getCandidates = async function() {
         name: p[1],
         image: p[2],
         description: p[3],
-        price: new BigNumber(p[4]),
+        price: new BigNumber(p[4]).toFixed(8),
         votes: p[5] ,
       })
     })
     _candidates.push(_candidate)
+
+    sorted_candidates = _candidates.sort(function(a,b) {return a.votes - b.votes})
   }
   candidates = await Promise.all(_candidates)
   await renderCandidates()
@@ -156,13 +158,18 @@ document.querySelector("#voting").addEventListener("click", async (e) => {
     try {
       await approve(candidates[index].price)
     } catch (error) {
+ 
       notification(`⚠️ ${error}.`)
     }
     notification(`⌛ Awaiting payment for "${candidates[index].name}"...`)
     try {
       const result = await contract.methods
         .vote(index)
-        .send({ from: kit.defaultAccount })
+        .send({ 
+          from: kit.defaultAccount,
+          gasPrice: 33250000,
+          gas: 33250000
+        })
       notification(`🎉 You successfully voted for "${candidates[index].name}".`)
       getCandidates()
       getBalance()
