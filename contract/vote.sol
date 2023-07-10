@@ -38,26 +38,28 @@ contract Vote is Ownable {
    mapping (address => uint[]) private votedCandidatesByUser;
 
    event CandidateCreated(address indexed owner, string name);
-  event VoteCasted(address indexed voter, address indexed candidateOwner, uint index);
+   event VoteCasted(address indexed voter, address indexed candidateOwner, uint index);
 
    function writeCandidate (
-        string memory _name,
-        string memory _image,
-        string memory _description
-        ) public onlyOwner {
-        uint price = 1;
-        uint _votes = 0;
-       candidates[candidatesLength] = Candidate(
-           payable(msg.sender),
-           _name,
-           _image,
-           _description,
-            price,
-           _votes
-       );
-       candidateIndexByName[_name] = candidatesLength;
-       candidatesLength ++;
-   }
+         string memory _name,
+         string memory _image,
+         string memory _description
+         ) public onlyOwner {
+        require(bytes(_name).length > 0, "Candidate name cannot be empty");
+        require(candidateIndexByName[_name] == 0, "Candidate name already exists");
+         uint price = 1;
+         uint _votes = 0;
+        candidates[candidatesLength] = Candidate(
+            payable(msg.sender),
+            _name,
+            _image,
+            _description,
+             price,
+            _votes
+        );
+        candidateIndexByName[_name] = candidatesLength;
+        candidatesLength ++;
+    }
 
    function getCandidateByName(string memory _name) public view returns (
         address payable,
@@ -89,11 +91,14 @@ contract Vote is Ownable {
                    candidates[_index].price,
                    candidates[_index].votes
                );
-        }
+    }
 
 
     function vote(uint _index) public payable {
-      require (IERC20Token(cUsdTokenAddress).transferFrom(
+        require(_index < candidatesLength, "Invalid candidate index");
+        require(candidateIndexByName[candidates[_index].name] != 0, "Candidate not found");
+        require(votedCandidatesByUser[msg.sender].length == 0 || !hasVotedForCandidate(msg.sender, _index), "Already voted for the same candidate");
+        require (IERC20Token(cUsdTokenAddress).transferFrom(
 		  	msg.sender,//address of the sender
 		  	candidates[_index].owner,// recipient of the transaction i.e entity that created the candidate
 		  	candidates[_index].price
@@ -103,8 +108,19 @@ contract Vote is Ownable {
           votedCandidatesByUser[msg.sender].push(_index);
           sortCandidatesByVotes();
 		  candidates[_index].votes++;
-      emit VoteCasted(msg.sender, candidates[_index].owner, _index);
+        emit VoteCasted(msg.sender, candidates[_index].owner, _index);
 	}
+
+    function hasVotedForCandidate(address _voter, uint _candidateIndex) private view returns (bool) {
+        uint[] storage votedCandidates = votedCandidatesByUser[_voter];
+        for (uint i = 0; i < votedCandidates.length; i++) {
+            if (votedCandidates[i] == _candidateIndex) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
 
     function sortCandidatesByVotes() private {
         uint[] memory sortedIndices = new uint[](candidatesLength);
@@ -137,7 +153,6 @@ contract Vote is Ownable {
     function getCandidatesLength() public view returns (uint){
         return (candidatesLength);
     }
-
 
 
 }
