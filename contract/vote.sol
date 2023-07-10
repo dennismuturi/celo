@@ -11,6 +11,8 @@ interface IERC20Token {
 
   event Transfer(address indexed from, address indexed to, uint256 value);
   event Approval(address indexed owner, address indexed spender, uint256 value);
+  event CandidateCreated(address indexed owner, string name);
+  event VoteCasted(address indexed voter, address indexed candidateOwner, uint index);
 }
 
 contract Vote {
@@ -28,7 +30,10 @@ contract Vote {
        uint votes;
    }
 
-   mapping (uint => Candidate) internal candidates;
+   mapping (uint => Candidate) private candidates;
+
+   event CandidateCreated(address indexed owner, string name);
+  event VoteCasted(address indexed voter, address indexed candidateOwner, uint index);
 
    function writeCandidate (
         string memory _name,
@@ -68,16 +73,16 @@ contract Vote {
 
 
     function vote(uint _index) public payable {
-        require (
-            IERC20Token(cUsdTokenAddress).transferFrom(
-			msg.sender,//address of the sender
-			candidates[_index].owner,// recipient of the transaction i.e entity that created the candidate
-			candidates[_index].price
-		  ),
-		  "Transfer failed."
-		);
-		candidates[_index].votes++;
-	}
+      require (IERC20Token(cUsdTokenAddress).transferFrom(
+		  	msg.sender,//address of the sender
+		  	candidates[_index].owner,// recipient of the transaction i.e entity that created the candidate
+		  	candidates[_index].price
+		    ),
+		    "Transfer failed."
+		  );
+		  candidates[_index].votes++;
+      emit VoteCasted(msg.sender, candidates[_index].owner, _index);
+	  }
         
     function getCandidatesLength() public view returns (uint){
         return (candidatesLength);
