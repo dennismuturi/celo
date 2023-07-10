@@ -1,4 +1,3 @@
-export NODE_OPTIONS=--openssl-legacy-provider
 # Install
 
 ```
@@ -37,7 +36,3 @@ npm run build
 4. Switch to the alfajores testnet in the CeloExtensionWallet.
 
 
-https://placehold.co/600x400
-
-
-0xaa5914a370803331b3fEEBA8810fd1e3078d8685
