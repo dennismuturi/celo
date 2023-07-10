@@ -29,6 +29,11 @@ npm run dev
 npm run build
 
 ```
+
+# Demo Link
+
+https://voting-dapp-phi.vercel.app/
+
 # Usage
 1. Install the [CeloExtensionWallet](https://chrome.google.com/webstore/detail/celoextensionwallet/kkilomkmpmkbdnfelcpgckmpcaemjcdh?hl=en) from the google chrome store.
 2. Create a wallet.
