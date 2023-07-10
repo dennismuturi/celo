@@ -13,6 +13,6 @@
   },
   "scripts": {
     "dev": "NODE_OPTIONS=--openssl-legacy-provider node index.js",
-    "build": "webpack"
+    "build": "wNODE_OPTIONS=--openssl-legacy-provider ebpack"
   }
 }
