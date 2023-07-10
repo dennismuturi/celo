@@ -1,3 +1,12 @@
+# Vote For Me
+This is a Voting Dapp that lets you vote for your favorite Celebrity. 
+Users can vote as many times as possible for their favorite celebrity and 
+the celebrity are ranked according to the number of votes they receive
+
+# Demo Link
+
+https://voting-dapp-phi.vercel.app/
+
 # Install
 
 ```
@@ -30,9 +39,7 @@ npm run build
 
 ```
 
-# Demo Link
 
-https://voting-dapp-phi.vercel.app/
 
 # Usage
 1. Install the [CeloExtensionWallet](https://chrome.google.com/webstore/detail/celoextensionwallet/kkilomkmpmkbdnfelcpgckmpcaemjcdh?hl=en) from the google chrome store.
