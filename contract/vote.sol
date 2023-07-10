@@ -15,10 +15,13 @@ interface IERC20Token {
   event VoteCasted(address indexed voter, address indexed candidateOwner, uint index);
 }
 
-contract Vote {
+
+import "@openzeppelin/contracts/access/Ownable.sol";
+contract Vote is Ownable {
  
 
    uint internal candidatesLength = 0;
+   uint[] private candidatesSortedByVotes;
    address internal cUsdTokenAddress = 0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1;
 
    struct Candidate {
@@ -31,6 +34,8 @@ contract Vote {
    }
 
    mapping (uint => Candidate) private candidates;
+   mapping (string => uint) private candidateIndexByName;
+   mapping (address => uint[]) private votedCandidatesByUser;
 
    event CandidateCreated(address indexed owner, string name);
   event VoteCasted(address indexed voter, address indexed candidateOwner, uint index);
@@ -39,7 +44,7 @@ contract Vote {
         string memory _name,
         string memory _image,
         string memory _description
-        ) public {
+        ) public onlyOwner {
         uint price = 1;
         uint _votes = 0;
        candidates[candidatesLength] = Candidate(
@@ -50,8 +55,23 @@ contract Vote {
             price,
            _votes
        );
+       candidateIndexByName[_name] = candidatesLength;
        candidatesLength ++;
    }
+
+   function getCandidateByName(string memory _name) public view returns (
+        address payable,
+        string memory,
+        string memory,
+        string memory,
+        uint,
+        uint
+    ) {
+        uint index = candidateIndexByName[_name];
+        require(index != 0, "Candidate not found");
+        return readCandidate(index - 1);
+    }
+
 
    function readCandidate (uint _index) public view returns (
            address payable,
@@ -80,9 +100,39 @@ contract Vote {
 		    ),
 		    "Transfer failed."
 		  );
+          votedCandidatesByUser[msg.sender].push(_index);
+          sortCandidatesByVotes();
 		  candidates[_index].votes++;
       emit VoteCasted(msg.sender, candidates[_index].owner, _index);
-	  }
+	}
+
+    function sortCandidatesByVotes() private {
+        uint[] memory sortedIndices = new uint[](candidatesLength);
+        for (uint i = 0; i < candidatesLength; i++) {
+            sortedIndices[i] = i;
+        }
+
+        for (uint i = 0; i < candidatesLength - 1; i++) {
+            for (uint j = i + 1; j < candidatesLength; j++) {
+                if (candidates[sortedIndices[i]].votes < candidates[sortedIndices[j]].votes) {
+                    uint temp = sortedIndices[i];
+                    sortedIndices[i] = sortedIndices[j];
+                    sortedIndices[j] = temp;
+                }
+            }
+        }
+
+        candidatesSortedByVotes = sortedIndices;
+    }
+
+    function getSortedCandidatesByVotes() public view returns (uint[] memory) {
+        return candidatesSortedByVotes;
+    }
+
+    function getVotedCandidatesByUser(address _user) public view returns (uint[] memory) {
+         require(votedCandidatesByUser[msg.sender].length > 0, "Only voters can call this function");
+        return votedCandidatesByUser[_user];
+    }
         
     function getCandidatesLength() public view returns (uint){
         return (candidatesLength);
