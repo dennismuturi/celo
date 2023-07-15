@@ -15,7 +15,6 @@ interface IERC20Token {
   event Approval(address indexed owner, address indexed spender, uint256 value);
 }
 
-
 import "@openzeppelin/contracts/access/Ownable.sol";
 contract Vote is Ownable {
  
@@ -234,6 +233,5 @@ contract Vote is Ownable {
     function getCandidatesLength() public view returns (uint){
         return (candidatesLength);
     }
-
 
 }
